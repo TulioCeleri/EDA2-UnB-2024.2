@@ -22,7 +22,7 @@ void inserir_na_Lista(Lista *l, int valor){
     no *novo = malloc(sizeof(no));
     if(novo){
         novo->chave = valor;
-        novo->prox = l->inicio;
+        novo->prox = NULL;
         l->inicio = novo;
         l->tam++;
     }
@@ -51,8 +51,7 @@ void imprimir_lista(Lista *l){
 
 void inicializarTabela(Lista t[]){
     int i;
-    for (i = 0; i < TAM; i++)
-    {
+    for (i = 0; i < TAM; i++) {
         inicializarLista(&t[i]);
     }
 }
@@ -72,22 +71,55 @@ int busca(Lista t[], int chave){
     return buscar_na_lista(&t[id], chave);
 }
 
-void imprimir(int t[]){
+void imprimir(Lista t[]){
     int i;
     for(i = 0; i < TAM; i++){
-        printf("%d = %d\n", i, t[i]);
+        printf("Indice %d= ", i);
+        imprimir_lista(&t[i]);
+        printf("\n");
     }
+}
+
+void remover_da_tabela(Lista l[], int valor) {
+    int id = funcaoHash(valor);
+
+    no *atual = l[id].inicio;
+    no *anterior = NULL;
+
+    while (atual != NULL) {
+        if (atual->chave == valor) {
+            // Encontrou o elemento a ser removido
+            if (anterior == NULL) {
+                // O nó a ser removido é o primeiro da lista
+                l[id].inicio = atual->prox;
+            } else {
+                // Nó está no meio ou no final da lista
+                anterior->prox = atual->prox;
+            }
+
+            free(atual);  // Libera a memória do nó removido
+            l[id].tam--;  // Atualiza o tamanho da lista
+            printf("Elemento %d removido do bucket %d.\n", valor, id);
+            return;
+        }
+        anterior = atual;
+        atual = atual->prox;
+    }
+
+    // Se chegou aqui, o elemento não foi encontrado
+    printf("Elemento %d não encontrado na tabela.\n", valor);
 }
 
 int main(){
 
-    int opcao, valor, retorno, tabela[TAM];
+    int opcao, valor, retorno;
+    Lista tabela[TAM];
 
     inicializarTabela(tabela);
 
     do
     {
-        printf("\n\t0 - Sair\n\t1 - Inserir\n\t2 - Buscar\n\t3 - Imprimir\n");
+        printf("\n\t0 - Sair\n\t1 - Inserir\n\t2 - Buscar\n\t3 - Imprimir\n\t4 - Remover\n");
         scanf("%d", &opcao);
 
         switch (opcao){
@@ -103,16 +135,20 @@ int main(){
                 if (retorno != 0){
                     printf("\tValor encontrado: %d\n", retorno);
                 } else {
-                    printf("\tValor não encontrado!\n");
+                    printf("\tValor nao encontrado!\n");
                 }
                 break;
             case 3:
                 imprimir(tabela);
                 break;
+            case 4:
+                printf("Digite um valor para ser removido: ");
+                scanf("%d", &valor);
+                remover_da_tabela(tabela, valor);
+                break;
             default:
-                printf("Opção inválida\n");
+                printf("Opçao invalida\n");
         }
-
     } while (opcao != 0);
     return 0;
 }
